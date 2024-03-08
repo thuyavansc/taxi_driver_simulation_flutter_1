@@ -43,6 +43,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
 
         print(notificationString);
         _notificationUtils.showNotification(pickupLatitude);
+        _showSnackbar(context,'Received New Ride Notification');
       } else {
         print('Received incomplete or empty New Ride Notification');
       }
@@ -65,6 +66,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
 
         print(acceptanceString);
         //_notificationUtils.showNotification(pickupLongitude);
+        _showSnackbar(context,'RideAccepted Notification');
         // Add logic here to start the ride
       } else {
         print('Received incomplete or empty Ride Accepted notification');
@@ -93,6 +95,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
   }
 
   void _acceptRide() {
+    print('Method called : _acceptRide');
     String pickupLatitude = '9.66687948479565';
     String pickupLongitude = '80.01168550372809';
     String dropoffLatitude = '9.384301041231042';
@@ -100,10 +103,33 @@ class _DriverTestAppState extends State<DriverTestApp> {
     _hubConnection.invoke("AcceptRide", args: [pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude]);
   }
 
+  void _startTrip() {
+      print('Method called : _startTrip');
+      String pickupLatitude = '9.66687948479565';
+      String pickupLongitude = '80.01168550372809';
+      String dropoffLatitude = '9.668249468406872';
+      String dropoffLongitude = '80.01819666913711';
+      _hubConnection.invoke("SimulateDriverTrip", args: [pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude]);
+  }
+
   void _sayHai() {
     print('try to invooke sayHi');
     String pickupLatitude = '9.66687948479565';
     _hubConnection.invoke("SayHi", args: [pickupLatitude]);
+  }
+
+  void _showSnackbar(BuildContext context, String message) {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(
+          color: Colors.red,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      backgroundColor: Colors.yellow,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
@@ -156,7 +182,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
                 onPressed: () {
                   print('Button Clicked : Pick Passenger');
                   // Add functionality for other buttons
-                  _sayHai();
+                  _startTrip();
                 },
                 child: Text('Pick Passenger'),
               ),
