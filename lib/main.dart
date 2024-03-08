@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:signalr_netcore/signalr_client.dart';
+import 'package:taxi_driver_simulation_flutter_1/utils/notification_utils.dart';
 
 void main() {
   runApp(MaterialApp(home: DriverTestApp()));
@@ -13,6 +14,8 @@ class DriverTestApp extends StatefulWidget {
 class _DriverTestAppState extends State<DriverTestApp> {
   late HubConnection _hubConnection;
   bool _isConnected = false;
+  final NotificationUtils _notificationUtils = NotificationUtils();
+
 
   @override
   void initState() {
@@ -24,11 +27,50 @@ class _DriverTestAppState extends State<DriverTestApp> {
     print('Initializing SignalR...');
     _hubConnection = HubConnectionBuilder().withUrl("http://192.168.8.168:5120/maphub").build();
 
-    _hubConnection.on("Notification", (List<Object?>? notificationData) {
-      // Handle notification from server
-      print('Received Notification: $notificationData');
-      // You can add logic here to handle the notification
+    _hubConnection.on("NewRideNotification", (List<Object?>? rideData) {
+      // Handle new ride notification
+      if (rideData != null && rideData.length >= 4) {
+        String pickupLatitude = rideData[0] as String;
+        var pickupLongitude = rideData[1];
+        var dropoffLatitude = rideData[2];
+        var dropoffLongitude = rideData[3];
+
+        var notificationString = 'Received New Ride Notification: '
+            'Pickup Latitude: $pickupLatitude, '
+            'Pickup Longitude: $pickupLongitude, '
+            'Dropoff Latitude: $dropoffLatitude, '
+            'Dropoff Longitude: $dropoffLongitude';
+
+        print(notificationString);
+        _notificationUtils.showNotification(pickupLatitude);
+      } else {
+        print('Received incomplete or empty New Ride Notification');
+      }
     });
+
+
+    _hubConnection.on("RideAccepted", (List<Object?>? rideData) {
+      // Handle ride acceptance
+      if (rideData != null && rideData.length >= 4) {
+        var pickupLatitude = rideData[0];
+        String pickupLongitude = rideData[1] as String;
+        var dropoffLatitude = rideData[2];
+        var dropoffLongitude = rideData[3];
+
+        var acceptanceString = 'Ride Accepted: '
+            'Pickup Latitude: $pickupLatitude, '
+            'Pickup Longitude: $pickupLongitude, '
+            'Dropoff Latitude: $dropoffLatitude, '
+            'Dropoff Longitude: $dropoffLongitude';
+
+        print(acceptanceString);
+        //_notificationUtils.showNotification(pickupLongitude);
+        // Add logic here to start the ride
+      } else {
+        print('Received incomplete or empty Ride Accepted notification');
+      }
+    });
+
 
     try {
       await _hubConnection.start();
@@ -48,6 +90,20 @@ class _DriverTestAppState extends State<DriverTestApp> {
       _isConnected = false;
     });
     print('Disconnected from SignalR');
+  }
+
+  void _acceptRide() {
+    String pickupLatitude = '9.66687948479565';
+    String pickupLongitude = '80.01168550372809';
+    String dropoffLatitude = '9.384301041231042';
+    String dropoffLongitude = '80.40887204157906';
+    _hubConnection.invoke("AcceptRide", args: [pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude]);
+  }
+
+  void _sayHai() {
+    print('try to invooke sayHi');
+    String pickupLatitude = '9.66687948479565';
+    _hubConnection.invoke("SayHi", args: [pickupLatitude]);
   }
 
   @override
@@ -89,20 +145,25 @@ class _DriverTestAppState extends State<DriverTestApp> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
+                  print('Button Clicked : Accept Ride');
                   // Add functionality for other buttons
+                  _acceptRide();
                 },
                 child: Text('Accept Ride'),
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
+                  print('Button Clicked : Pick Passenger');
                   // Add functionality for other buttons
+                  _sayHai();
                 },
                 child: Text('Pick Passenger'),
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
+                  print('Button Clicked : Drop Passenger');
                   // Add functionality for other buttons
                 },
                 child: Text('Drop Passenger'),
@@ -110,6 +171,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
+                  print('Button Clicked : Confirm Payment');
                   // Add functionality for other buttons
                 },
                 child: Text('Confirm Payment'),
@@ -117,6 +179,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
+                  print('Button Clicked : Complete Ride');
                   // Add functionality for other buttons
                 },
                 child: Text('Complete Ride'),
