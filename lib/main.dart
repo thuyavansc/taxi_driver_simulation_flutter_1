@@ -25,7 +25,15 @@ class _DriverTestAppState extends State<DriverTestApp> {
 
   void _initializeSignalR() async {
     print('Initializing SignalR...');
-    _hubConnection = HubConnectionBuilder().withUrl("http://192.168.8.168:5120/maphub").build();
+    // _hubConnection = HubConnectionBuilder().withUrl("http://192.168.8.168:5120/maphub").build();
+    _hubConnection = HubConnectionBuilder().withUrl("https://markspector.runasp.net/maphub").build();
+
+    _hubConnection.onclose(({error}) {
+      setState(() {
+      _isConnected = false;
+      });
+    });
+
 
     _hubConnection.on("NewRideNotification", (List<Object?>? rideData) {
       // Handle new ride notification
@@ -43,7 +51,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
 
         print(notificationString);
         _notificationUtils.showNotification(pickupLatitude);
-        _showSnackbar(context,'Received New Ride Notification');
+        _showSnackbar(context,'🐥 Received New Ride Notification');
       } else {
         print('Received incomplete or empty New Ride Notification');
       }
@@ -66,10 +74,30 @@ class _DriverTestAppState extends State<DriverTestApp> {
 
         print(acceptanceString);
         //_notificationUtils.showNotification(pickupLongitude);
-        _showSnackbar(context,'RideAccepted Notification');
+        _showSnackbar(context,'✔ RideAccepted Notification');
         // Add logic here to start the ride
       } else {
         print('Received incomplete or empty Ride Accepted notification');
+      }
+    });
+
+    // Listen for 'DriverReachedPickupPoint' events
+    _hubConnection.on("DriverReachedPickup", (List<Object?>? args) {
+      if (args != null && args.isNotEmpty) {
+        String message = args[0] as String;
+        print("Received Driver Reached Pickup Point Notification: $message");
+        // _notificationUtils.showNotification(message);
+        _showSnackbar(context,'🟡 Driver Reached Pickup Point');
+      }
+    });
+
+    // Listen for 'DriverReachedPickupPoint' events
+    _hubConnection.on("DriverReachedDropOff", (List<Object?>? args) {
+      if (args != null && args.isNotEmpty) {
+        String message = args[0] as String;
+        print("Received Driver Reached Pickup Point Notification: $message");
+        // _notificationUtils.showNotification(message);
+        _showSnackbar(context,'🟢 Driver Reached DropOff Point');
       }
     });
 
@@ -148,10 +176,32 @@ class _DriverTestAppState extends State<DriverTestApp> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    _isConnected
+                        ? const CircleAvatar(
+                      backgroundColor: Colors.green,
+                      radius: 10,
+                    )
+                        : const CircleAvatar(
+                      backgroundColor: Colors.red,
+                      radius: 10,
+                    ),
+                    Text(
+                      _isConnected ? 'SignalR connected successfully' : 'SignalR connection failed',
+                      style: TextStyle(color: _isConnected ? Colors.green : Colors.red),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
                     ElevatedButton(
                       onPressed: !_isConnected ? _initializeSignalR : null,
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                        backgroundColor: MaterialStateProperty.all<Color>(_isConnected ? Colors.grey : Colors.green),
                         foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
                       ),
                       child: Text('Connect to Server'),
@@ -160,7 +210,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
                     ElevatedButton(
                       onPressed: _isConnected ? _disconnectFromServer : null,
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                        backgroundColor: MaterialStateProperty.all<Color>(_isConnected ? Colors.red : Colors.grey),
                         foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
                       ),
                       child: Text('Disconnect from Server'),
@@ -199,6 +249,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
                 onPressed: () {
                   print('Button Clicked : Confirm Payment');
                   // Add functionality for other buttons
+                  _sayHai();
                 },
                 child: Text('Confirm Payment'),
               ),
