@@ -25,8 +25,9 @@ class _DriverTestAppState extends State<DriverTestApp> {
 
   void _initializeSignalR() async {
     print('Initializing SignalR...');
-    // _hubConnection = HubConnectionBuilder().withUrl("http://192.168.8.168:5120/maphub").build();
-    _hubConnection = HubConnectionBuilder().withUrl("https://markspector.runasp.net/maphub").build();
+    //_hubConnection = HubConnectionBuilder().withUrl("http://192.168.8.168:5120/maphub").build();
+    _hubConnection = HubConnectionBuilder().withUrl("http://192.168.6.47:5120/maphub").build();
+    //_hubConnection = HubConnectionBuilder().withUrl("https://markspector.runasp.net/maphub").build();
 
     _hubConnection.onclose(({error}) {
       setState(() {
@@ -77,7 +78,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
         _showSnackbar(context,'✔ RideAccepted Notification');
         // Add logic here to start the ride
       } else {
-        print('Received incomplete or empty Ride Accepted notification');
+        print('Received incomplete or empty Ride Accepted notification:');
       }
     });
 
@@ -204,7 +205,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
                         backgroundColor: MaterialStateProperty.all<Color>(_isConnected ? Colors.grey : Colors.green),
                         foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
                       ),
-                      child: Text('Connect to Server'),
+                      child: Text('Connect to Server ✅'),
                     ),
                     SizedBox(height: 8),
                     ElevatedButton(
@@ -213,7 +214,7 @@ class _DriverTestAppState extends State<DriverTestApp> {
                         backgroundColor: MaterialStateProperty.all<Color>(_isConnected ? Colors.red : Colors.grey),
                         foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
                       ),
-                      child: Text('Disconnect from Server'),
+                      child: Text('Disconnect from Server ❎'),
                     ),
                   ],
                 ),
